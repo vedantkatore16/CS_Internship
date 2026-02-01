@@ -1,0 +1,507 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Glassmorphism To-Do List</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter&display=swap" rel="stylesheet" />
+
+<style>
+  /* Reset and Base Styles */
+  * {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+  }
+
+  body {
+    font-family: 'Inter', sans-serif;
+    height: 100vh;
+    background: linear-gradient(135deg, #e0c3fc, #8ec5fc);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+  }
+
+  /* Container */
+  .app-container {
+    background: rgba(255, 255, 255, 0.2);
+    backdrop-filter: blur(15px);
+    border-radius: 20px;
+    box-shadow: 0 8px 32px 0 rgba(31, 38, 135, 0.37);
+    width: 100%;
+    max-width: 600px;
+    padding: 30px 20px;
+    display: flex;
+    flex-direction: column;
+  }
+
+  /* Title */
+  h1 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-weight: 700;
+    font-size: 2rem;
+    color: #fff;
+  }
+
+  /* Filter Tabs */
+  .filters {
+    display: flex;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .filter-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    padding: 8px 16px;
+    border-radius: 20px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  .filter-btn:hover,
+  .filter-btn.active {
+    background: rgba(255,255,255,0.4);
+    transform: scale(1.05);
+  }
+
+  /* Input Area */
+  .input-area {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 20px;
+  }
+
+  .task-input {
+    flex: 1;
+    padding: 12px 20px;
+    border-radius: 50px;
+    border: none;
+    outline: none;
+    font-size: 1rem;
+    background: rgba(255,255,255,0.2);
+    color: #fff;
+    backdrop-filter: blur(10px);
+    transition: background 0.3s;
+  }
+
+  .task-input::placeholder {
+    color: #ddd;
+  }
+
+  .add-btn {
+    padding: 12px 24px;
+    border: none;
+    border-radius: 50px;
+    background: #4facfe;
+    color: #fff;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  .add-btn:hover {
+    background: #00f2fe;
+    transform: scale(1.05);
+  }
+
+  /* Tasks List */
+  .tasks {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+  }
+
+  /* Empty State */
+  .empty-state {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 0;
+    color: #fff;
+    text-align: center;
+  }
+
+  .empty-state svg {
+    width: 80px;
+    height: 80px;
+    margin-bottom: 20px;
+    fill: #fff;
+    opacity: 0.8;
+  }
+
+  /* Task Card */
+  .task {
+    display: flex;
+    align-items: center;
+    background: rgba(255,255,255,0.1);
+    border-radius: 15px;
+    padding: 15px;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+    transition: transform 0.3s, opacity 0.3s;
+    position: relative;
+  }
+
+  /* Custom Checkbox */
+  .checkbox-container {
+    display: flex;
+    align-items: center;
+    margin-right: 15px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  .checkbox {
+    appearance: none;
+    width: 24px;
+    height: 24px;
+    border: 2px solid #fff;
+    border-radius: 50%;
+    position: relative;
+    transition: border-color 0.3s, background-color 0.3s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .checkbox:checked {
+    background-color: #4facfe;
+    border-color: #4facfe;
+  }
+
+  /* Checkmark */
+  .checkbox:checked::after {
+    content: "";
+    display: block;
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #fff;
+    animation: check 0.3s forwards;
+  }
+
+  @keyframes check {
+    from { opacity: 0; transform: scale(0); }
+    to { opacity: 1; transform: scale(1); }
+  }
+
+  /* Task Text */
+  .task-text {
+    flex: 1;
+    font-size: 1rem;
+    color: #fff;
+    transition: opacity 0.3s, text-decoration 0.3s, color 0.3s;
+  }
+
+  .task-text.checked {
+    text-decoration: line-through;
+    opacity: 0.6;
+    color: #ccc;
+  }
+
+  /* Action Buttons */
+  .task-actions {
+    display: flex;
+    gap: 10px;
+    opacity: 0;
+    transition: opacity 0.3s;
+  }
+
+  .task:hover .task-actions {
+    opacity: 1;
+  }
+
+  .action-btn {
+    background: rgba(255,255,255,0.2);
+    border: none;
+    padding: 6px 10px;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    color: #fff;
+    transition: background 0.3s, transform 0.2s;
+  }
+
+  .action-btn:hover {
+    background: rgba(255,255,255,0.4);
+    transform: scale(1.05);
+  }
+
+  /* Animations for adding/removing tasks */
+  .task-enter {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  .task-enter-active {
+    opacity: 1;
+    transform: translateY(0);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+  .task-exit {
+    opacity: 1;
+    transform: translateY(0);
+  }
+  .task-exit-active {
+    opacity: 0;
+    transform: translateY(-20px);
+    transition: opacity 0.3s, transform 0.3s;
+  }
+
+  /* Responsive adjustments */
+  @media(max-width: 650px) {
+    .app-container {
+      padding: 20px 15px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<div class="app-container" id="app">
+  <h1>My Tasks</h1>
+  
+  <!-- Filter Tabs -->
+  <div class="filters">
+    <button class="filter-btn active" data-filter="all">All</button>
+    <button class="filter-btn" data-filter="active">Active</button>
+    <button class="filter-btn" data-filter="completed">Completed</button>
+  </div>
+  
+  <!-- Input Area -->
+  <div class="input-area">
+    <input type="text" id="taskInput" class="task-input" placeholder="Add a new task..." />
+    <button id="addBtn" class="add-btn">Add Task</button>
+  </div>
+  
+  <!-- Tasks List -->
+  <div class="tasks" id="taskList"></div>
+  
+  <!-- Empty State -->
+  <div class="empty-state" id="emptyState" style="display: none;">
+    <!-- SVG Icon: Cloud with check -->
+    <svg viewBox="0 0 64 64" xmlns="http://www.w3.org/2000/svg">
+      <path d="M48 22a10 10 0 00-9.95-10A12 12 0 0036 24h-1a8 8 0 00-16 0 8 8 0 00-8 8 8 8 0 008-8 8 8 0 018 8h4a6 6 0 006-6z" fill="#fff"/>
+    </svg>
+    <p>Your day looks clear!</p>
+  </div>
+</div>
+
+<script>
+  // JavaScript Modules
+  const TaskManager = (() => {
+    const STORAGE_KEY = 'tasks';
+
+    let tasks = [];
+    let currentFilter = 'all';
+
+    // Cache DOM elements
+    const taskListEl = document.getElementById('taskList');
+    const taskInputEl = document.getElementById('taskInput');
+    const emptyStateEl = document.getElementById('emptyState');
+    const filterButtons = document.querySelectorAll('.filter-btn');
+
+    // Initialize
+    const init = () => {
+      loadTasks();
+      bindEvents();
+      render();
+    };
+
+    const loadTasks = () => {
+      const stored = localStorage.getItem(STORAGE_KEY);
+      tasks = stored ? JSON.parse(stored) : [];
+    };
+
+    const saveTasks = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(tasks));
+    };
+
+    const bindEvents = () => {
+      document.getElementById('addBtn').addEventListener('click', addTask);
+      taskInputEl.addEventListener('keydown', (e) => {
+        if(e.key === 'Enter') addTask();
+      });
+      filterButtons.forEach(btn => {
+        btn.addEventListener('click', () => {
+          setFilter(btn.dataset.filter);
+        });
+      });
+    };
+
+    const setFilter = (filter) => {
+      currentFilter = filter;
+      filterButtons.forEach(btn => btn.classList.toggle('active', btn.dataset.filter === filter));
+      render();
+    };
+
+    const addTask = () => {
+      const text = taskInputEl.value.trim();
+      if(text === '') return;
+      const newTask = {
+        id: Date.now(),
+        text,
+        completed: false,
+      };
+      tasks.push(newTask);
+      saveTasks();
+      taskInputEl.value = '';
+      render();
+    };
+
+    const toggleComplete = (id) => {
+      tasks = tasks.map(t => t.id === id ? {...t, completed: !t.completed} : t);
+      saveTasks();
+      render();
+    };
+
+    const deleteTask = (id) => {
+      tasks = tasks.filter(t => t.id !== id);
+      saveTasks();
+      render();
+    };
+
+    const editTask = (id, newText) => {
+      tasks = tasks.map(t => t.id === id ? {...t, text: newText} : t);
+      saveTasks();
+      render();
+    };
+
+    const getFilteredTasks = () => {
+      switch(currentFilter) {
+        case 'active': return tasks.filter(t => !t.completed);
+        case 'completed': return tasks.filter(t => t.completed);
+        default: return tasks;
+      }
+    };
+
+    const render = () => {
+      const filteredTasks = getFilteredTasks();
+      taskListEl.innerHTML = '';
+
+      if(filteredTasks.length === 0) {
+        emptyStateEl.style.display = 'flex';
+        return;
+      } else {
+        emptyStateEl.style.display = 'none';
+      }
+
+      filteredTasks.forEach(task => {
+        const taskEl = document.createElement('div');
+        taskEl.className = 'task';
+        taskEl.dataset.id = task.id;
+
+        // Animate slide in
+        taskEl.classList.add('task-enter');
+        requestAnimationFrame(() => {
+          taskEl.classList.add('task-enter-active');
+          taskEl.classList.remove('task-enter');
+        });
+
+        // Checkbox
+        const checkboxContainer = document.createElement('div');
+        checkboxContainer.className = 'checkbox-container';
+
+        const checkbox = document.createElement('input');
+        checkbox.type = 'checkbox';
+        checkbox.className = 'checkbox';
+        checkbox.checked = task.completed;
+
+        checkbox.addEventListener('change', () => toggleComplete(task.id));
+
+        checkboxContainer.appendChild(checkbox);
+
+        // Text
+        const taskText = document.createElement('div');
+        taskText.className = 'task-text' + (task.completed ? ' checked' : '');
+        taskText.textContent = task.text;
+
+        // Double click to edit
+        taskText.addEventListener('dblclick', () => {
+          const input = document.createElement('input');
+          input.type = 'text';
+          input.value = task.text;
+          input.className = 'edit-input';
+          input.style.width = '70%';
+
+          // Save on Enter or blur
+          const saveEdit = () => {
+            const newText = input.value.trim();
+            if(newText !== '') {
+              editTask(task.id, newText);
+            }
+            taskEl.replaceChild(taskText, input);
+          };
+          input.addEventListener('keydown', (e) => {
+            if(e.key === 'Enter') saveEdit();
+          });
+          input.addEventListener('blur', saveEdit);
+
+          taskEl.replaceChild(input, taskText);
+          input.focus();
+        });
+
+        // Actions (Edit & Delete)
+        const actions = document.createElement('div');
+        actions.className = 'task-actions';
+
+        const editBtn = document.createElement('button');
+        editBtn.className = 'action-btn';
+        editBtn.innerHTML = '✏️';
+        editBtn.title = 'Edit';
+
+        editBtn.addEventListener('click', () => {
+          taskText.dispatchEvent(new Event('dblclick'));
+        });
+
+        const deleteBtn = document.createElement('button');
+        deleteBtn.className = 'action-btn';
+        deleteBtn.innerHTML = '🗑️';
+        deleteBtn.title = 'Delete';
+
+        deleteBtn.addEventListener('click', () => deleteTask(task.id));
+
+        actions.appendChild(editBtn);
+        actions.appendChild(deleteBtn);
+
+        // Assemble task
+        taskEl.appendChild(checkboxContainer);
+        taskEl.appendChild(taskText);
+        taskEl.appendChild(actions);
+
+        taskListEl.appendChild(taskEl);
+
+        // Animate exit if task is removed
+        // (Handled in deleteTask by re-rendering)
+      });
+    };
+
+    return {
+      init,
+    };
+  })();
+
+  // Initialize app
+  document.addEventListener('DOMContentLoaded', () => {
+    TaskManager.init();
+
+    // Show empty state if no tasks
+    const checkEmpty = () => {
+      const taskCount = document.querySelectorAll('.task').length;
+      document.getElementById('emptyState').style.display = taskCount === 0 ? 'flex' : 'none';
+    };
+
+    // Re-render on every change
+    const observer = new MutationObserver(checkEmpty);
+    observer.observe(document.getElementById('taskList'), { childList: true });
+  });
+</script>
+
+</body>
+</html>
