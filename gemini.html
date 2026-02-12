@@ -1,0 +1,254 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Lumina | Professional Publishing</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; background-color: #ffffff; scroll-behavior: smooth; }
+        .serif { font-family: 'Instrument Serif', serif; }
+        .page { display: none; }
+        .page.active { display: block; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+        @keyframes slideUp { from { opacity: 0; transform: translateY(20px); } to { opacity: 1; transform: translateY(0); } }
+        .glass { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(12px); }
+    </style>
+</head>
+<body class="text-slate-900">
+
+    <div id="progress" class="fixed top-0 left-0 h-1 bg-indigo-600 z-[100] transition-all duration-200" style="width: 0%"></div>
+
+    <nav class="sticky top-0 glass border-b border-slate-100 z-50">
+        <div class="max-w-6xl mx-auto px-6 h-20 flex items-center justify-between">
+            <a href="#" onclick="showPage('feed')" class="text-3xl font-bold serif italic tracking-tighter">Lumina</a>
+            
+            <div class="flex items-center gap-6">
+                <button onclick="showPage('feed')" class="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition">Feed</button>
+                <button onclick="showPage('manage')" class="text-sm font-semibold text-slate-500 hover:text-indigo-600 transition">Manage</button>
+                <button onclick="showPage('create')" class="bg-indigo-600 text-white px-5 py-2 rounded-full text-sm font-bold shadow-lg shadow-indigo-100 hover:bg-indigo-700 transition active:scale-95">
+                    + New Post
+                </button>
+            </div>
+        </div>
+    </nav>
+
+    <main id="feed" class="page active max-w-6xl mx-auto px-6 py-12">
+        <div class="mb-16">
+            <h1 class="text-7xl font-medium serif mb-6">Perspectives on <span class="text-indigo-600 italic">everything.</span></h1>
+            <p class="text-xl text-slate-500 max-w-2xl">A clean space for your thoughts, curated for the modern reader.</p>
+        </div>
+        <div id="post-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-12">
+            </div>
+        <div id="feed-empty" class="hidden text-center py-20 bg-slate-50 rounded-3xl border border-dashed border-slate-200">
+            <p class="text-slate-400 font-medium">Your feed is empty. Start your journey by creating a post.</p>
+        </div>
+    </main>
+
+    <main id="create" class="page max-w-3xl mx-auto px-6 py-20">
+        <header class="mb-12">
+            <button onclick="showPage('feed')" class="text-slate-400 hover:text-slate-900 flex items-center gap-2 mb-4 transition">
+                ← Back to feed
+            </button>
+            <h2 class="text-4xl font-bold">Draft your story</h2>
+        </header>
+        
+        <div class="space-y-8">
+            <div class="group">
+                <label class="text-xs font-bold uppercase tracking-widest text-slate-400 group-focus-within:text-indigo-600 transition">Title</label>
+                <input type="text" id="post-title" placeholder="What's on your mind?" class="w-full text-4xl font-medium serif border-b border-slate-100 focus:border-indigo-600 outline-none py-4 bg-transparent transition-colors">
+            </div>
+            
+            <div class="group">
+                <label class="text-xs font-bold uppercase tracking-widest text-slate-400 group-focus-within:text-indigo-600 transition">Category</label>
+                <select id="post-cat" class="w-full py-4 border-b border-slate-100 outline-none bg-transparent">
+                    <option value="Lifestyle">Lifestyle</option>
+                    <option value="Technology">Technology</option>
+                    <option value="Design">Design</option>
+                    <option value="Finance">Finance</option>
+                </select>
+            </div>
+
+            <div class="group">
+                <label class="text-xs font-bold uppercase tracking-widest text-slate-400 group-focus-within:text-indigo-600 transition">Content</label>
+                <textarea id="post-content" placeholder="Start writing..." class="w-full h-80 text-lg leading-relaxed outline-none py-4 bg-transparent resize-none"></textarea>
+            </div>
+
+            <button onclick="handlePublish()" id="publish-btn" class="w-full bg-slate-900 text-white py-4 rounded-2xl font-bold text-lg hover:bg-slate-800 transition flex items-center justify-center gap-3">
+                <span id="btn-text">Publish to Lumina</span>
+                <div id="loader" class="hidden w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+            </button>
+        </div>
+    </main>
+
+    <main id="manage" class="page max-w-5xl mx-auto px-6 py-12">
+        <div class="flex items-center justify-between mb-12">
+            <div>
+                <h2 class="text-4xl font-bold">Manage Posts</h2>
+                <p class="text-slate-500">Edit or remove your published stories.</p>
+            </div>
+            <div class="bg-indigo-50 text-indigo-700 px-4 py-2 rounded-lg font-bold text-sm">
+                Total: <span id="count-badge">0</span>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-3xl border border-slate-100 overflow-hidden shadow-sm">
+            <table class="w-full text-left">
+                <thead class="bg-slate-50 border-b border-slate-100">
+                    <tr>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Story Title</th>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Category</th>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400">Date</th>
+                        <th class="px-6 py-4 text-xs font-bold uppercase text-slate-400 text-right">Actions</th>
+                    </tr>
+                </thead>
+                <tbody id="manage-table-body">
+                    </tbody>
+            </table>
+        </div>
+    </main>
+
+    <div id="toast" class="fixed bottom-10 right-10 flex items-center gap-3 bg-slate-900 text-white px-6 py-4 rounded-2xl shadow-2xl transition-all duration-500 translate-y-20 opacity-0 z-[200]">
+        <div class="w-8 h-8 bg-green-500 rounded-full flex items-center justify-center text-white">✓</div>
+        <p id="toast-msg" class="font-medium"></p>
+    </div>
+
+    <script>
+        // State Management
+        let posts = [
+            { id: 1, title: "Designing for the Future", content: "The world of design is changing fast...", cat: "Design", date: "Feb 12", img: 42 },
+            { id: 2, title: "The Rise of Minimalist Code", content: "Clean code is not just a preference...", cat: "Technology", date: "Feb 11", img: 88 }
+        ];
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            window.scrollTo(0,0);
+            renderAll();
+        }
+
+        function renderAll() {
+            renderFeed();
+            renderManageTable();
+            document.getElementById('count-badge').innerText = posts.length;
+        }
+
+        function renderFeed() {
+            const container = document.getElementById('post-grid');
+            const empty = document.getElementById('feed-empty');
+            
+            if(posts.length === 0) {
+                empty.classList.remove('hidden');
+                container.innerHTML = '';
+                return;
+            }
+            empty.classList.add('hidden');
+
+            container.innerHTML = posts.map(post => `
+                <div class="group cursor-pointer">
+                    <div class="aspect-[4/3] rounded-3xl bg-slate-100 mb-6 overflow-hidden relative">
+                        <img src="https://picsum.photos/seed/${post.id}/800/600" class="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110">
+                        <div class="absolute top-4 left-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-[10px] font-bold uppercase tracking-widest">${post.cat}</div>
+                    </div>
+                    <h3 class="text-2xl font-bold leading-tight group-hover:text-indigo-600 transition mb-3">${post.title}</h3>
+                    <p class="text-slate-500 line-clamp-2 text-sm leading-relaxed">${post.content}</p>
+                    <div class="mt-4 flex items-center gap-3 text-xs font-bold text-slate-400">
+                        <span>${post.date}</span>
+                        <span class="w-1 h-1 bg-slate-200 rounded-full"></span>
+                        <span>${Math.ceil(post.content.length / 200)} min read</span>
+                    </div>
+                </div>
+            `).join('');
+        }
+
+        function renderManageTable() {
+            const tbody = document.getElementById('manage-table-body');
+            if(posts.length === 0) {
+                tbody.innerHTML = `<tr><td colspan="4" class="px-6 py-10 text-center text-slate-400">No records found.</td></tr>`;
+                return;
+            }
+
+            tbody.innerHTML = posts.map(post => `
+                <tr class="border-b border-slate-50 hover:bg-slate-50/50 transition">
+                    <td class="px-6 py-4 font-semibold text-slate-800">${post.title}</td>
+                    <td class="px-6 py-4">
+                        <span class="px-3 py-1 bg-slate-100 rounded-full text-xs font-medium text-slate-600">${post.cat}</span>
+                    </td>
+                    <td class="px-6 py-4 text-sm text-slate-400">${post.date}</td>
+                    <td class="px-6 py-4 text-right">
+                        <button onclick="deletePost(${post.id})" class="text-red-500 hover:text-red-700 font-bold text-xs uppercase tracking-widest p-2 hover:bg-red-50 rounded-lg transition">
+                            Delete
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        async function handlePublish() {
+            const title = document.getElementById('post-title').value;
+            const content = document.getElementById('post-content').value;
+            const cat = document.getElementById('post-cat').value;
+
+            if(!title || !content) {
+                alert("Please fill in the story.");
+                return;
+            }
+
+            const btnText = document.getElementById('btn-text');
+            const loader = document.getElementById('loader');
+
+            btnText.innerText = "Processing...";
+            loader.classList.remove('hidden');
+
+            await new Promise(r => setTimeout(r, 1200));
+
+            const newPost = {
+                id: Date.now(),
+                title: title,
+                content: content,
+                cat: cat,
+                date: "Feb 12",
+                img: Math.floor(Math.random() * 100)
+            };
+
+            posts.unshift(newPost);
+            
+            // UI Reset
+            btnText.innerText = "Publish to Lumina";
+            loader.classList.add('hidden');
+            document.getElementById('post-title').value = '';
+            document.getElementById('post-content').value = '';
+            
+            showToast("Story published successfully!");
+            showPage('feed');
+        }
+
+        function deletePost(id) {
+            if(confirm("Are you sure you want to remove this story?")) {
+                posts = posts.filter(p => p.id !== id);
+                renderAll();
+                showToast("Post deleted permanently.");
+            }
+        }
+
+        function showToast(msg) {
+            const t = document.getElementById('toast');
+            document.getElementById('toast-msg').innerText = msg;
+            t.classList.remove('translate-y-20', 'opacity-0');
+            setTimeout(() => {
+                t.classList.add('translate-y-20', 'opacity-0');
+            }, 3000);
+        }
+
+        // Initialize
+        renderAll();
+        
+        window.onscroll = () => {
+            const winScroll = document.body.scrollTop || document.documentElement.scrollTop;
+            const height = document.documentElement.scrollHeight - document.documentElement.clientHeight;
+            const scrolled = (winScroll / height) * 100;
+            document.getElementById('progress').style.width = scrolled + "%";
+        };
+    </script>
+</body>
+</html>
